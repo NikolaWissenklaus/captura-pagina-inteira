@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Captura de Página Inteira: instalação e uso</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --soft: #f8f9fa;
+    --text: #202124;
+    --muted: #5f6368;
+    --line: #dadce0;
+    --blue: #1a73e8;
+    --blue-soft: #e8f0fe;
+    --green: #188038;
+    --green-soft: #e6f4ea;
+    --red: #c5221f;
+    --red-soft: #fce8e6;
+    --ease: cubic-bezier(.4, 0, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 Roboto, "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 20px 80px; }
+  header.top { border-bottom: 1px solid var(--line); background: var(--soft); }
+  header.top .wrap { padding-top: 40px; padding-bottom: 32px; }
+  h1 { margin: 0 0 8px; font-size: 32px; line-height: 1.25; font-weight: 500; }
+  h2 { margin: 56px 0 12px; font-size: 24px; font-weight: 500; }
+  h3 { margin: 0 0 4px; font-size: 17px; font-weight: 500; }
+  p { margin: 0 0 14px; }
+  .lead { margin: 0; color: var(--muted); font-size: 18px; }
+  a { color: var(--blue); }
+  code, kbd {
+    font: 14px/1.4 "Roboto Mono", Consolas, monospace;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+    overflow-wrap: anywhere;
+  }
+  kbd { box-shadow: 0 1px 0 var(--line); }
+  nav.toc { margin: 24px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  nav.toc a {
+    padding: 4px 12px;
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--bg);
+  }
+  nav.toc a:hover { background: var(--blue-soft); }
+
+  ol.steps { list-style: none; margin: 20px 0 0; padding: 0; counter-reset: step; }
+  ol.steps > li {
+    position: relative;
+    counter-increment: step;
+    padding: 0 0 26px 52px;
+    border-left: 2px solid var(--line);
+    margin-left: 17px;
+  }
+  ol.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: -18px;
+    top: -2px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 500;
+    display: grid;
+    place-items: center;
+  }
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    margin: 4px 0 8px;
+    padding: 6px 8px 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--soft);
+  }
+  .copy code { border: 0; padding: 0; background: none; }
+  .copy button {
+    flex: none;
+    padding: 4px 10px;
+    font: 500 13px Roboto, "Segoe UI", sans-serif;
+    color: var(--blue);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .note {
+    margin: 16px 0;
+    padding: 12px 16px;
+    border-left: 4px solid var(--blue);
+    background: var(--blue-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .note.warn { border-left-color: #f9ab00; background: #fef7e0; }
+  .note p:last-child { margin: 0; }
+
+  /* Mini tela do Chrome usada no passo do Modo do desenvolvedor */
+  .mock {
+    margin: 10px 0 4px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+    max-width: 520px;
+  }
+  .mock .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--soft);
+    border-bottom: 1px solid var(--line);
+  }
+  .mock .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .mock .switch {
+    width: 30px;
+    height: 16px;
+    border-radius: 8px;
+    background: #bdc1c6;
+    position: relative;
+    animation: sw-bg 4s var(--ease) infinite;
+  }
+  .mock .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    animation: sw-knob 4s var(--ease) infinite;
+  }
+  .mock .btns { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .mock .btn {
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--blue);
+    animation: btn-in 4s var(--ease) infinite;
+  }
+  .mock .btn.target { animation-name: btn-in-target; }
+  @keyframes sw-bg { 0%, 20% { background: #bdc1c6; } 30%, 100% { background: var(--blue); } }
+  @keyframes sw-knob { 0%, 20% { transform: none; } 30%, 100% { transform: translateX(14px); } }
+  @keyframes btn-in { 0%, 30% { opacity: 0; transform: translateY(-6px); } 42%, 100% { opacity: 1; transform: none; } }
+  @keyframes btn-in-target {
+    0%, 30% { opacity: 0; transform: translateY(-6px); box-shadow: none; }
+    42%, 55% { opacity: 1; transform: none; box-shadow: none; }
+    65%, 100% { opacity: 1; transform: none; box-shadow: 0 0 0 3px var(--blue-soft), 0 0 0 4px var(--blue); }
+  }
+
+  /* Demonstração de como a captura é montada */
+  .demo {
+    margin: 20px 0 8px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--soft);
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 440px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .col h4 { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--muted); text-align: center; }
+  .sheet {
+    position: relative;
+    height: 320px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .slice { position: absolute; left: 0; right: 0; height: 80px; padding: 10px; }
+  .slice i { display: block; height: 8px; margin-bottom: 7px; border-radius: 4px; background: currentColor; opacity: .35; }
+  .slice i:first-child { width: 55%; opacity: .9; height: 10px; }
+  .slice i:nth-child(3) { width: 80%; }
+  .slice i:nth-child(4) { width: 65%; }
+  .s0 { top: 0; color: #1a73e8; background: #e8f0fe; }
+  .s1 { top: 80px; color: #188038; background: #e6f4ea; }
+  .s2 { top: 160px; color: #b06000; background: #fef7e0; }
+  .s3 { top: 240px; color: #a50e0e; background: #fce8e6; }
+  .window {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 80px;
+    border: 2px solid var(--text);
+    border-radius: 4px;
+    box-shadow: 0 0 0 600px rgba(32, 33, 36, .28);
+    transition: transform .5s var(--ease);
+    pointer-events: none;
+  }
+  .window.flash { animation: flash .3s ease-out; }
+  @keyframes flash { 0% { background: rgba(255, 255, 255, .9); } 100% { background: transparent; } }
+  #out .slice { opacity: 0; }
+  #out .slice.on { opacity: 1; }
+  .fly { position: absolute; margin: 0; z-index: 2; border-radius: 3px; box-shadow: 0 4px 14px rgba(32, 33, 36, .3); transition: transform .6s var(--ease); }
+  .demo-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; max-width: 440px; margin: 14px auto 0; font-size: 14px; color: var(--muted); }
+  .demo-foot button {
+    padding: 5px 12px;
+    font: 500 13px Roboto, "Segoe UI", sans-serif;
+    color: var(--blue);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .tablewrap { overflow-x: auto; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { font-weight: 500; background: var(--soft); }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .tag.yes { color: var(--green); background: var(--green-soft); }
+  .tag.no { color: var(--red); background: var(--red-soft); }
+  dl { margin: 12px 0 0; }
+  dt { font-weight: 500; margin-top: 12px; }
+  dd { margin: 0; color: var(--muted); }
+  ul { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 26px; }
+    h2 { font-size: 21px; }
+    ol.steps > li { padding-left: 30px; }
+    .demo { padding: 14px; }
+    .stage { gap: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .mock .switch, .mock .switch::after, .mock .btn { animation: none; }
+    .mock .switch { background: var(--blue); }
+    .mock .switch::after { transform: translateX(14px); }
+    .window, .fly { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1>Captura de Página Inteira</h1>
+    <p class="lead">Extensão própria para o Chrome que fotografa a página do topo ao rodapé. Funciona sem internet e não envia nada para lugar nenhum.</p>
+    <nav class="toc" aria-label="Seções">
+      <a href="#instalar">Instalar</a>
+      <a href="#usar">Usar</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#seguranca">Segurança</a>
+      <a href="#limites">Limites</a>
+      <a href="#manutencao">Atualizar e remover</a>
+      <a href="#glossario">Glossário</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+<h2 id="instalar">Instalar no Chrome</h2>
+<p>A extensão não está na Chrome Web Store. Ela é uma pasta no seu computador, e o Chrome carrega direto dessa pasta. Leva menos de um minuto.</p>
+
+<ol class="steps">
+  <li>
+    <h3>Deixe a pasta em um lugar definitivo</h3>
+    <p>A pasta da extensão é esta:</p>
+    <div class="copy"><code>C:\Users\Usuário\Documents\prin\captura-pagina-inteira</code><button type="button" data-copy="C:\Users\Usuário\Documents\prin\captura-pagina-inteira">Copiar</button></div>
+    <p>O Chrome lê os arquivos dessa pasta toda vez que abre. Se você mover, renomear ou apagar a pasta depois de instalar, a extensão some. Se quiser guardar em outro lugar, mova agora.</p>
+  </li>
+  <li>
+    <h3>Abra a página de extensões</h3>
+    <p>Cole este endereço na barra do Chrome e aperte <kbd>Enter</kbd>. O Chrome bloqueia links para as páginas internas dele, por isso é preciso colar.</p>
+    <div class="copy"><code>chrome://extensions</code><button type="button" data-copy="chrome://extensions">Copiar</button></div>
+  </li>
+  <li>
+    <h3>Ligue o Modo do desenvolvedor</h3>
+    <p>É a chave no canto superior direito da página. Ao ligar, aparece uma fileira de botões nova logo abaixo.</p>
+    <div class="mock" aria-hidden="true">
+      <div class="bar"><strong>Extensões</strong><span class="toggle">Modo do desenvolvedor <span class="switch"></span></span></div>
+      <div class="btns"><span class="btn target">Carregar sem compactação</span><span class="btn">Compactar extensão</span><span class="btn">Atualizar</span></div>
+    </div>
+  </li>
+  <li>
+    <h3>Clique em "Carregar sem compactação"</h3>
+    <p>Na janela que abrir, selecione a pasta <code>captura-pagina-inteira</code> (a pasta inteira, não um arquivo de dentro dela) e confirme em "Selecionar pasta".</p>
+    <p>Um cartão chamado "Captura de Página Inteira" aparece na lista. Está instalada.</p>
+  </li>
+  <li>
+    <h3>Fixe o ícone na barra</h3>
+    <p>Clique no ícone de peça de quebra-cabeça, à direita da barra de endereço, e depois no alfinete ao lado de "Captura de Página Inteira". O ícone azul fica sempre visível.</p>
+  </li>
+</ol>
+
+<div class="note warn">
+  <p><strong>Aviso do Chrome ao abrir o navegador.</strong> Como a extensão não veio da loja, o Chrome pode mostrar um aviso sobre "extensões no modo de desenvolvedor". É esperado para qualquer extensão carregada de uma pasta. Basta fechar o aviso. Não desligue o Modo do desenvolvedor, senão a extensão é desativada.</p>
+</div>
+
+<h2 id="usar">Usar</h2>
+<ol class="steps">
+  <li>
+    <h3>Abra a página que quer capturar</h3>
+    <p>Espere ela terminar de carregar.</p>
+  </li>
+  <li>
+    <h3>Clique no ícone azul ou aperte <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></h3>
+    <p>A página rola sozinha até o fim. O ícone mostra o progresso em porcentagem. Fique na aba até terminar: cada tela leva cerca de meio segundo, porque o Chrome limita a duas fotos por segundo.</p>
+  </li>
+  <li>
+    <h3>Salve ou copie</h3>
+    <p>Uma aba nova abre com a imagem pronta e três botões: <strong>Salvar PNG</strong> (qualidade máxima), <strong>Salvar JPG</strong> (arquivo menor) e <strong>Copiar</strong> (para colar direto em um chat ou documento).</p>
+  </li>
+</ol>
+<div class="note">
+  <p>Se o atalho não responder, outro programa ou extensão já usa essa combinação. Troque em <code>chrome://extensions/shortcuts</code>.</p>
+  <p>Se o ícone mostrar <strong>!</strong> em vermelho, passe o mouse sobre ele para ler o motivo.</p>
+</div>
+
+<h2 id="como-funciona">Como funciona</h2>
+<p>O Chrome só deixa uma extensão fotografar o que está visível na janela. Para pegar a página inteira, a extensão rola a página uma tela por vez, fotografa cada tela e depois cola as fotos uma embaixo da outra.</p>
+
+<div class="demo">
+  <div class="stage" id="stage">
+    <div class="col">
+      <h4>Página aberta</h4>
+      <div class="sheet" id="src">
+        <div class="slice s0"><i></i><i></i><i></i><i></i></div>
+        <div class="slice s1"><i></i><i></i><i></i><i></i></div>
+        <div class="slice s2"><i></i><i></i><i></i><i></i></div>
+        <div class="slice s3"><i></i><i></i><i></i><i></i></div>
+        <div class="window" id="win"></div>
+      </div>
+    </div>
+    <div class="col">
+      <h4>Imagem final</h4>
+      <div class="sheet" id="out">
+        <div class="slice s0"><i></i><i></i><i></i><i></i></div>
+        <div class="slice s1"><i></i><i></i><i></i><i></i></div>
+        <div class="slice s2"><i></i><i></i><i></i><i></i></div>
+        <div class="slice s3"><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="demo-foot"><span id="caption" role="status">Tela 0 de 4</span><button type="button" id="replay">Repetir</button></div>
+</div>
+
+<p>Três detalhes que evitam imagem errada:</p>
+<ul>
+  <li><strong>Cabeçalho fixo.</strong> Menus que acompanham a rolagem apareceriam repetidos em toda tela. Eles saem na primeira foto e ficam escondidos nas seguintes.</li>
+  <li><strong>Última tela.</strong> Quase nunca a altura da página é múltiplo exato da janela. A última foto se sobrepõe à anterior, e a posição real da rolagem decide onde ela é colada.</li>
+  <li><strong>Depois da captura.</strong> A página volta para a posição de rolagem em que estava e tudo o que foi escondido reaparece.</li>
+</ul>
+
+<h2 id="seguranca">Por que é segura</h2>
+<p>Uma extensão de screenshot que espiona precisa de duas coisas: permissão para ler todos os sites o tempo todo e um caminho para mandar os dados para fora. Esta não tem nenhuma das duas.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Item</th><th>Nesta extensão</th><th>O que significa</th></tr></thead>
+  <tbody>
+    <tr><td><code>activeTab</code></td><td><span class="tag yes">usa</span></td><td>Acesso só à aba atual e só depois que você clica no ícone ou usa o atalho. O acesso acaba quando a aba muda de página.</td></tr>
+    <tr><td><code>scripting</code></td><td><span class="tag yes">usa</span></td><td>Permite rolar a página e medir a altura dela. Só funciona na aba liberada pelo <code>activeTab</code>.</td></tr>
+    <tr><td>Ler todos os sites</td><td><span class="tag no">não pede</span></td><td>Nada roda nas páginas enquanto você navega. Sem clique, a extensão fica parada.</td></tr>
+    <tr><td>Histórico, cookies, abas, downloads</td><td><span class="tag no">não pede</span></td><td>O Chrome nega essas funções a quem não declarou a permissão.</td></tr>
+    <tr><td>Rede</td><td><span class="tag no">bloqueada</span></td><td>O código não tem nenhuma chamada de rede, e a política de conteúdo da extensão (<code>default-src 'none'</code>) faz o Chrome recusar qualquer conexão a partir da aba de resultado.</td></tr>
+    <tr><td>Código remoto</td><td><span class="tag no">não existe</span></td><td>Só rodam os arquivos da pasta. Não há biblioteca de terceiros nem script baixado.</td></tr>
+    <tr><td>Disco</td><td><span class="tag no">não grava</span></td><td>As fotos ficam na memória e são descartadas quando a imagem é montada. Só vira arquivo se você clicar em Salvar.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Outras proteções no código:</p>
+<ul>
+  <li>O trecho que roda dentro da página fica no mundo isolado da extensão. O site não consegue ler nem alterar as variáveis dele, e ele só devolve números (posição e altura), que são conferidos antes do uso.</li>
+  <li>Só a aba de resultado da própria extensão pode buscar a captura, e precisa apresentar um identificador aleatório gerado a cada captura. Sites e outras extensões não conseguem pedir.</li>
+  <li>Se você trocar de aba no meio, a captura para. Assim ela nunca fotografa uma aba diferente da que você escolheu.</li>
+  <li>Texto vindo do site (o endereço) é escrito na tela como texto puro, nunca como HTML.</li>
+</ul>
+
+<h3 style="margin-top:24px">Como conferir você mesmo</h3>
+<ol>
+  <li>Em <code>chrome://extensions</code>, clique em <strong>Detalhes</strong> no cartão da extensão. Na parte de permissões não pode aparecer "Ler e alterar todos os seus dados em todos os sites".</li>
+  <li>Abra <code>manifest.json</code> na pasta. A linha <code>"permissions"</code> lista só <code>activeTab</code> e <code>scripting</code>, e não existe <code>host_permissions</code>.</li>
+  <li>No mesmo cartão, clique em <strong>service worker</strong> para abrir o DevTools da extensão, vá na aba <strong>Network</strong> e tire um screenshot. A lista fica vazia.</li>
+  <li>O código inteiro tem dois arquivos curtos: <code>background.js</code> e <code>result.js</code>. Procure por <code>fetch</code>, <code>XMLHttpRequest</code> ou <code>http</code>: não há nenhum.</li>
+</ol>
+
+<h2 id="limites">Limites conhecidos</h2>
+<ul>
+  <li><strong>Páginas protegidas pelo Chrome.</strong> <code>chrome://</code>, a Chrome Web Store, a página de nova aba e o leitor de PDF não aceitam nenhuma extensão. O ícone mostra <strong>!</strong> nesses casos.</li>
+  <li><strong>Arquivos locais.</strong> Para capturar um <code>file://</code>, ligue "Permitir acesso a URLs de arquivo" nos detalhes da extensão.</li>
+  <li><strong>Rolagem infinita.</strong> A captura para em 60 telas para não rodar para sempre em feeds.</li>
+  <li><strong>Páginas muito altas.</strong> O Chrome não cria imagem com mais de cerca de 32 mil pixels de altura. Acima disso, a captura sai em partes, cada uma com seus botões.</li>
+  <li><strong>Itens fixos no rodapé.</strong> Um botão de chat ou aviso de cookies preso na base da janela aparece uma vez, na altura da primeira tela.</li>
+  <li><strong>Apps com rolagem interna.</strong> Quando a página não rola e o conteúdo rola dentro de um painel (webmail, chat), a captura pega o maior painel rolável.</li>
+  <li><strong>Janela anônima.</strong> Só funciona se você ligar "Permitir em modo anônimo" nos detalhes da extensão.</li>
+</ul>
+
+<h2 id="manutencao">Atualizar e remover</h2>
+<p><strong>Atualizar:</strong> depois de alterar qualquer arquivo da pasta, volte em <code>chrome://extensions</code> e clique na seta circular do cartão da extensão.</p>
+<p><strong>Remover:</strong> no mesmo cartão, clique em <strong>Remover</strong>. Depois disso a pasta pode ser apagada. A extensão não deixa nada para trás, porque não grava dados.</p>
+
+<h2 id="glossario">Glossário</h2>
+<dl>
+  <dt>Extensão sem compactação</dt>
+  <dd>Extensão carregada direto de uma pasta, sem passar pela loja. É o modo usado por quem desenvolve.</dd>
+  <dt>Manifesto (<code>manifest.json</code>)</dt>
+  <dd>Arquivo que declara o nome da extensão e tudo o que ela tem permissão para fazer. O Chrome nega o que não estiver ali.</dd>
+  <dt>Permissão <code>activeTab</code></dt>
+  <dd>Acesso temporário a uma única aba, concedido pelo seu clique. É a alternativa segura a pedir acesso a todos os sites.</dd>
+  <dt>Service worker</dt>
+  <dd>O código da extensão que roda em segundo plano. Ele acorda quando você clica no ícone e dorme logo depois.</dd>
+  <dt>Mundo isolado</dt>
+  <dd>Ambiente separado em que o código da extensão roda dentro de uma página. Ele enxerga o conteúdo, mas o site não enxerga o código.</dd>
+  <dt>Política de conteúdo (CSP)</dt>
+  <dd>Regra que diz ao Chrome de onde uma página pode carregar scripts e para onde pode se conectar. Aqui a regra é: de lugar nenhum fora da própria extensão.</dd>
+</dl>
+
+</div>
+
+<script>
+(function () {
+  // Botões de copiar
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      var done = function () {
+        btn.textContent = 'Copiado';
+        setTimeout(function () { btn.textContent = 'Copiar'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else {
+        fallback();
+      }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        done();
+      }
+    });
+  });
+
+  // Demonstração: a janela desce pela página e cada tela fotografada viaja até a imagem final.
+  var stage = document.getElementById('stage');
+  var win = document.getElementById('win');
+  var caption = document.getElementById('caption');
+  var srcSlices = document.querySelectorAll('#src .slice');
+  var outSlices = document.querySelectorAll('#out .slice');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var STEP = 80;
+  var run = 0;
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function reset() {
+    win.style.transform = 'translateY(0)';
+    outSlices.forEach(function (s) { s.classList.remove('on'); });
+    stage.querySelectorAll('.fly').forEach(function (f) { f.remove(); });
+    caption.textContent = 'Tela 0 de 4';
+  }
+
+  function finish() {
+    win.style.transform = 'translateY(' + STEP * 3 + 'px)';
+    outSlices.forEach(function (s) { s.classList.add('on'); });
+    caption.textContent = '4 telas coladas em uma imagem só';
+  }
+
+  async function play() {
+    var me = ++run;
+    reset();
+    if (reduced) { finish(); return; }
+    await wait(600);
+    for (var i = 0; i < 4; i++) {
+      if (me !== run) return;
+      win.style.transform = 'translateY(' + STEP * i + 'px)';
+      await wait(i === 0 ? 100 : 550);
+      if (me !== run) return;
+      caption.textContent = 'Tela ' + (i + 1) + ' de 4: rola, espera pintar, fotografa';
+      win.classList.remove('flash');
+      void win.offsetWidth;
+      win.classList.add('flash');
+
+      // Cópia da tela sai da origem e pousa no lugar dela na imagem final
+      var from = srcSlices[i].getBoundingClientRect();
+      var to = outSlices[i].getBoundingClientRect();
+      var base = stage.getBoundingClientRect();
+      var fly = srcSlices[i].cloneNode(true);
+      fly.classList.add('fly');
+      fly.style.left = from.left - base.left + 'px';
+      fly.style.top = from.top - base.top + 'px';
+      fly.style.width = from.width + 'px';
+      fly.style.right = 'auto';
+      stage.appendChild(fly);
+      void fly.offsetWidth;
+      fly.style.transform = 'translate(' + (to.left - from.left) + 'px,' + (to.top - from.top) + 'px)';
+      await wait(650);
+      if (me !== run) { fly.remove(); return; }
+      outSlices[i].classList.add('on');
+      fly.remove();
+      await wait(250);
+    }
+    if (me !== run) return;
+    caption.textContent = '4 telas coladas em uma imagem só';
+  }
+
+  document.getElementById('replay').addEventListener('click', play);
+
+  // Só começa quando a demonstração entra na tela
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) { io.disconnect(); play(); }
+    }, { threshold: 0.5 });
+    io.observe(stage);
+  } else {
+    play();
+  }
+})();
+</script>
+</body>
+</html>
